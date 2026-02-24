@@ -7,7 +7,7 @@ Official extension repository for [NijiStream](https://github.com/usmanbutt-dev/
 In NijiStream, go to **Settings → Extensions** and paste this URL into the repo field:
 
 ```
-https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/main/index.json
+https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/index.json
 ```
 
 ## Available extensions

@@ -8,7 +8,7 @@
       "name": "Example Source",
       "version": "1.0.0",
       "lang": "en",
-      "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/main/extensions/com.nijistream.example.js",
+      "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.example.js",
       "icon": null,
       "nsfw": false,
       "changelog": "Initial release — mock data extension for testing the extension engine."
