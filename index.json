@@ -4,14 +4,44 @@
   "description": "Official extension repository for NijiStream.",
   "extensions": [
     {
+      "id": "com.nijistream.gogoanime",
+      "name": "GogoAnime",
+      "version": "1.0.0",
+      "lang": "en",
+      "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.gogoanime.js",
+      "icon": null,
+      "nsfw": false,
+      "changelog": "Initial release — GogoAnime via Consumet API with multi-quality streaming."
+    },
+    {
+      "id": "com.nijistream.zoro",
+      "name": "HiAnime (Zoro)",
+      "version": "1.0.0",
+      "lang": "en",
+      "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.zoro.js",
+      "icon": null,
+      "nsfw": false,
+      "changelog": "Initial release — HiAnime/Zoro via Consumet API with subtitle support."
+    },
+    {
+      "id": "com.nijistream.gogoanime-direct",
+      "name": "GogoAnime (Direct)",
+      "version": "1.0.0",
+      "lang": "en",
+      "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.gogoanime-direct.js",
+      "icon": null,
+      "nsfw": false,
+      "changelog": "Initial release — Direct GogoAnime scraper, no API server needed."
+    },
+    {
       "id": "com.nijistream.example",
-      "name": "Example Source",
+      "name": "Example Source (Mock)",
       "version": "1.0.0",
       "lang": "en",
       "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.example.js",
       "icon": null,
       "nsfw": false,
-      "changelog": "Initial release — mock data extension for testing the extension engine."
+      "changelog": "Mock data extension for testing the extension engine."
     }
   ]
 }
