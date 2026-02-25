@@ -4,25 +4,29 @@
 // No external API dependency — works without any server infrastructure.
 //
 // TRADE-OFF: Less stable than API-based extensions because GogoAnime
-// may change its HTML structure at any time. When that happens, the
-// CSS selectors below need updating.
+// may change its HTML structure at any time, and they use anti-bot
+// measures (JS challenges) that may block direct HTTP requests.
 //
-// Base URL may change; check for current GogoAnime domain if broken.
+// If this extension stops working, update BASE_URL to the current
+// active GogoAnime domain. Common mirrors to try:
+//   https://gogoanime.gg
+//   https://gogoanime3.net
+//   https://anitaku.bz
 
 const manifest = {
   id: "com.nijistream.gogoanime-direct",
   name: "GogoAnime (Direct)",
-  version: "1.0.0",
+  version: "1.1.0",
   lang: "en",
   author: "nijistream",
-  description: "GogoAnime direct scraper — no API server needed, but may break if site changes.",
+  description: "GogoAnime direct scraper — may be blocked by anti-bot measures. Update BASE_URL if broken.",
   icon: null,
   nsfw: false
 };
 
 // ── Configuration ──
-// Update this if GogoAnime changes its domain.
-var BASE_URL = "https://anitaku.pe";
+// Update BASE_URL to the current active GogoAnime domain if broken.
+var BASE_URL = "https://gogoanime3.net";
 var AJAX_URL = "https://ajax.gogocdn.net/ajax";
 
 class AnimeSource {

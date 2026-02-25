@@ -1,29 +1,48 @@
-// NijiStream — Zoro/HiAnime Extension (via Consumet API)
+// NijiStream — AniList Extension (via AniList GraphQL API)
 //
-// This extension uses a Consumet API instance to provide anime from
-// Zoro.to / HiAnime.to — a popular source known for soft-subbed
-// anime with multiple quality options.
+// Uses the AniList GraphQL API (https://graphql.anilist.co) for anime
+// metadata: search, popular/trending, and detail pages.
 //
-// Consumet Zoro endpoints:
-//   GET /{query}?page=N          → search results
-//   GET /info?id={id}            → anime info + episode list
-//   GET /watch?episodeId={id}    → streaming sources
-//   GET /top-airing?page=N       → popular/trending
-//   GET /recent-episodes?page=N  → latest episodes
+// AniList is a modern anime database with high-quality cover art and
+// comprehensive metadata. No authentication required for browsing.
+// Supports pagination, genres, scores, and more.
+//
+// AniList API docs: https://docs.anilist.co/
 
 const manifest = {
   id: "com.nijistream.zoro",
-  name: "HiAnime (Zoro)",
-  version: "1.0.0",
+  name: "AniList",
+  version: "2.0.0",
   lang: "en",
   author: "nijistream",
-  description: "HiAnime/Zoro via Consumet API — soft-subbed anime with multiple servers.",
+  description: "Anime browse & search via AniList GraphQL. High-quality covers and metadata.",
   icon: null,
   nsfw: false
 };
 
-// ── Configuration ──
-var API_BASE = "https://api.consumet.org/anime/zoro";
+var GRAPHQL_URL = "https://graphql.anilist.co";
+
+// Helper: POST a GraphQL query and return the raw JSON string.
+async function gql(query, variables) {
+  var body = JSON.stringify({ query: query, variables: variables || {} });
+  var raw = await http.post(GRAPHQL_URL, body, {
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+  });
+  return raw;
+}
+
+// Helper: extract a cover URL from an AniList media item.
+function getCover(item) {
+  if (!item || !item.coverImage) return null;
+  return item.coverImage.large || item.coverImage.medium || null;
+}
+
+// Helper: extract preferred title (english → romaji → native).
+function getTitle(item) {
+  if (!item || !item.title) return "Unknown";
+  return item.title.english || item.title.romaji || item.title.native || "Unknown";
+}
 
 class AnimeSource {
 
@@ -32,203 +51,170 @@ class AnimeSource {
   // ═══════════════════════════════════════════════════════════════
 
   async search(query, page) {
-    log("Zoro search: " + query + " page=" + page);
+    log("AniList search: " + query + " page=" + page);
 
     try {
-      var url = API_BASE + "/" + encodeURIComponent(query) + "?page=" + page;
-      var raw = await http.get(url);
+      var q = "query ($search: String, $page: Int) { Page(page: $page, perPage: 20) { pageInfo { hasNextPage } media(search: $search, type: ANIME, isAdult: false) { id title { romaji english native } coverImage { large medium } } } }";
+
+      var raw = await gql(q, { search: query, page: page });
       var data = JSON.parse(raw);
+      var page_data = data.data && data.data.Page ? data.data.Page : {};
+      var media = page_data.media || [];
+      var pageInfo = page_data.pageInfo || {};
 
       var results = [];
-      if (data.results && data.results.length > 0) {
-        for (var i = 0; i < data.results.length; i++) {
-          var item = data.results[i];
-          results.push({
-            id: item.id || "",
-            title: item.title || "Unknown",
-            cover: item.image || null,
-            url: item.id || ""
-          });
-        }
+      for (var i = 0; i < media.length; i++) {
+        var item = media[i];
+        results.push({
+          id: String(item.id || ""),
+          title: getTitle(item),
+          cover: getCover(item),
+          url: String(item.id || "")
+        });
       }
 
       return {
-        hasNextPage: data.hasNextPage || false,
+        hasNextPage: pageInfo.hasNextPage || false,
         results: results
       };
     } catch (e) {
-      log("Zoro search error: " + e);
+      log("AniList search error: " + e);
       return { hasNextPage: false, results: [] };
     }
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // REQUIRED: Get Detail
+  // REQUIRED: Get Detail (anime info + episode list)
   // ═══════════════════════════════════════════════════════════════
 
   async getDetail(animeId) {
-    log("Zoro detail: " + animeId);
+    log("AniList detail: " + animeId);
 
     try {
-      // Zoro uses query parameter style: /info?id=xxx
-      var url = API_BASE + "/info?id=" + encodeURIComponent(animeId);
-      var raw = await http.get(url);
-      var data = JSON.parse(raw);
+      var q = "query ($id: Int) { Media(id: $id, type: ANIME) { id title { romaji english native } coverImage { large medium } bannerImage description(asHtml: false) genres status episodes } }";
 
+      var raw = await gql(q, { id: parseInt(animeId) });
+      var data = JSON.parse(raw);
+      var item = data.data && data.data.Media ? data.data.Media : {};
+
+      // Build synthetic episode list from known episode count.
+      var episodeCount = item.episodes || 1;
+      if (episodeCount > 100) episodeCount = 100;
       var episodes = [];
-      if (data.episodes && data.episodes.length > 0) {
-        for (var i = 0; i < data.episodes.length; i++) {
-          var ep = data.episodes[i];
-          episodes.push({
-            number: ep.number || (i + 1),
-            title: ep.title || ("Episode " + (ep.number || (i + 1))),
-            url: ep.id || ""
-          });
-        }
+      for (var i = 1; i <= episodeCount; i++) {
+        episodes.push({
+          number: i,
+          title: "Episode " + i,
+          url: "anilist:" + animeId + ":ep:" + i
+        });
       }
 
+      var statusMap = {
+        "FINISHED": "completed",
+        "RELEASING": "ongoing",
+        "NOT_YET_RELEASED": "upcoming",
+        "CANCELLED": "cancelled",
+        "HIATUS": "hiatus"
+      };
+      var rawStatus = (item.status || "").toUpperCase();
+      var status = statusMap[rawStatus] || "unknown";
+
       return {
-        title: data.title || "Unknown",
-        cover: data.image || null,
-        banner: data.cover || null,
-        synopsis: data.description || null,
-        genres: data.genres || [],
-        status: (data.status || "unknown").toLowerCase(),
+        title: getTitle(item),
+        cover: getCover(item),
+        banner: item.bannerImage || null,
+        synopsis: item.description || null,
+        genres: item.genres || [],
+        status: status,
         episodes: episodes
       };
     } catch (e) {
-      log("Zoro detail error: " + e);
+      log("AniList detail error: " + e);
       throw e;
     }
   }
 
   // ═══════════════════════════════════════════════════════════════
   // REQUIRED: Get Video Sources
+  // (AniList is metadata-only — no streaming sources available)
   // ═══════════════════════════════════════════════════════════════
 
   async getVideoSources(episodeUrl) {
-    log("Zoro sources: " + episodeUrl);
-
-    try {
-      // Try vidcloud first (usually best quality), then vidstreaming
-      var sources = await this._fetchSources(episodeUrl, "vidcloud");
-      if (sources.sources.length === 0) {
-        sources = await this._fetchSources(episodeUrl, "vidstreaming");
-      }
-
-      return sources;
-    } catch (e) {
-      log("Zoro sources error: " + e);
-      return { sources: [], subtitles: [] };
-    }
+    log("AniList sources: " + episodeUrl + " (metadata-only — no video sources)");
+    return { sources: [], subtitles: [] };
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // OPTIONAL: Get Popular
+  // OPTIONAL: Get Popular / Trending
   // ═══════════════════════════════════════════════════════════════
 
   async getPopular(page) {
-    log("Zoro popular page=" + page);
+    log("AniList popular page=" + page);
 
     try {
-      var url = API_BASE + "/top-airing?page=" + page;
-      var raw = await http.get(url);
+      var q = "query ($page: Int) { Page(page: $page, perPage: 20) { pageInfo { hasNextPage } media(type: ANIME, sort: POPULARITY_DESC, isAdult: false) { id title { romaji english native } coverImage { large medium } } } }";
+
+      var raw = await gql(q, { page: page });
       var data = JSON.parse(raw);
+      var page_data = data.data && data.data.Page ? data.data.Page : {};
+      var media = page_data.media || [];
+      var pageInfo = page_data.pageInfo || {};
 
       var results = [];
-      if (data.results && data.results.length > 0) {
-        for (var i = 0; i < data.results.length; i++) {
-          var item = data.results[i];
-          results.push({
-            id: item.id || "",
-            title: item.title || "Unknown",
-            cover: item.image || null,
-            url: item.id || ""
-          });
-        }
+      for (var i = 0; i < media.length; i++) {
+        var item = media[i];
+        results.push({
+          id: String(item.id || ""),
+          title: getTitle(item),
+          cover: getCover(item),
+          url: String(item.id || "")
+        });
       }
 
       return {
-        hasNextPage: data.hasNextPage || false,
+        hasNextPage: pageInfo.hasNextPage || false,
         results: results
       };
     } catch (e) {
-      log("Zoro popular error: " + e);
+      log("AniList popular error: " + e);
       return { hasNextPage: false, results: [] };
     }
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // OPTIONAL: Get Latest
+  // OPTIONAL: Get Latest (currently airing)
   // ═══════════════════════════════════════════════════════════════
 
   async getLatest(page) {
-    log("Zoro latest page=" + page);
+    log("AniList latest page=" + page);
 
     try {
-      var url = API_BASE + "/recent-episodes?page=" + page;
-      var raw = await http.get(url);
+      var q = "query ($page: Int) { Page(page: $page, perPage: 20) { pageInfo { hasNextPage } media(type: ANIME, status: RELEASING, sort: TRENDING_DESC, isAdult: false) { id title { romaji english native } coverImage { large medium } } } }";
+
+      var raw = await gql(q, { page: page });
       var data = JSON.parse(raw);
+      var page_data = data.data && data.data.Page ? data.data.Page : {};
+      var media = page_data.media || [];
+      var pageInfo = page_data.pageInfo || {};
 
       var results = [];
-      if (data.results && data.results.length > 0) {
-        for (var i = 0; i < data.results.length; i++) {
-          var item = data.results[i];
-          results.push({
-            id: item.id || "",
-            title: item.title || "Unknown",
-            cover: item.image || null,
-            url: item.id || ""
-          });
-        }
+      for (var i = 0; i < media.length; i++) {
+        var item = media[i];
+        results.push({
+          id: String(item.id || ""),
+          title: getTitle(item),
+          cover: getCover(item),
+          url: String(item.id || "")
+        });
       }
 
       return {
-        hasNextPage: data.hasNextPage || false,
+        hasNextPage: pageInfo.hasNextPage || false,
         results: results
       };
     } catch (e) {
-      log("Zoro latest error: " + e);
+      log("AniList latest error: " + e);
       return { hasNextPage: false, results: [] };
     }
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // PRIVATE: Fetch sources from a specific server
-  // ═══════════════════════════════════════════════════════════════
-
-  async _fetchSources(episodeId, server) {
-    var url = API_BASE + "/watch?episodeId=" + encodeURIComponent(episodeId) + "&server=" + server;
-    var raw = await http.get(url);
-    var data = JSON.parse(raw);
-
-    var sources = [];
-    if (data.sources && data.sources.length > 0) {
-      for (var i = 0; i < data.sources.length; i++) {
-        var src = data.sources[i];
-        sources.push({
-          url: src.url || "",
-          quality: src.quality || "default",
-          type: src.isM3U8 ? "hls" : "mp4",
-          server: server
-        });
-      }
-    }
-
-    // Zoro often provides subtitles
-    var subtitles = [];
-    if (data.subtitles && data.subtitles.length > 0) {
-      for (var i = 0; i < data.subtitles.length; i++) {
-        var sub = data.subtitles[i];
-        subtitles.push({
-          url: sub.url || "",
-          lang: sub.lang || "unknown",
-          label: sub.lang || "Unknown",
-          type: "vtt"
-        });
-      }
-    }
-
-    return { sources: sources, subtitles: subtitles };
   }
 }

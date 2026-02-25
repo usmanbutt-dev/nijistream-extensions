@@ -5,33 +5,33 @@
   "extensions": [
     {
       "id": "com.nijistream.gogoanime",
-      "name": "GogoAnime",
-      "version": "1.0.0",
+      "name": "GogoAnime (MAL)",
+      "version": "2.0.0",
       "lang": "en",
       "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.gogoanime.js",
       "icon": null,
       "nsfw": false,
-      "changelog": "Initial release — GogoAnime via Consumet API with multi-quality streaming."
+      "changelog": "v2.0.0: Switched to Jikan/MAL API (api.consumet.org was shut down). Metadata browsing only — no video streaming."
     },
     {
       "id": "com.nijistream.zoro",
-      "name": "HiAnime (Zoro)",
-      "version": "1.0.0",
+      "name": "AniList",
+      "version": "2.0.0",
       "lang": "en",
       "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.zoro.js",
       "icon": null,
       "nsfw": false,
-      "changelog": "Initial release — HiAnime/Zoro via Consumet API with subtitle support."
+      "changelog": "v2.0.0: Rewritten to use AniList GraphQL API. High-quality covers, bilingual titles, trending/popular browse. Metadata only."
     },
     {
       "id": "com.nijistream.gogoanime-direct",
       "name": "GogoAnime (Direct)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "lang": "en",
       "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.gogoanime-direct.js",
       "icon": null,
       "nsfw": false,
-      "changelog": "Initial release — Direct GogoAnime scraper, no API server needed."
+      "changelog": "v1.1.0: Updated BASE_URL to gogoanime3.net (anitaku.pe is down). May be blocked by anti-bot measures."
     },
     {
       "id": "com.nijistream.example",
