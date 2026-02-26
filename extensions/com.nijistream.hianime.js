@@ -15,7 +15,7 @@
 //
 // aniwatch-api docs: https://github.com/ghoshRitesh12/aniwatch-api
 
-var API_BASE = "https://aniwatch-api-stream.vercel.app";
+var API_BASE = "https://usman-lenovo-1.tailb5865a.ts.net";
 
 const manifest = {
   id: "com.nijistream.hianime",
