@@ -4,6 +4,16 @@
   "description": "Official extension repository for NijiStream.",
   "extensions": [
     {
+      "id": "com.nijistream.hianime",
+      "name": "HiAnime",
+      "version": "1.0.0",
+      "lang": "en",
+      "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.hianime.js",
+      "icon": null,
+      "nsfw": false,
+      "changelog": "v1.0.0: HiAnime streaming extension via aniwatch-api. Sub/Dub with subtitles. First streaming extension!"
+    },
+    {
       "id": "com.nijistream.gogoanime",
       "name": "GogoAnime (MAL)",
       "version": "2.0.0",

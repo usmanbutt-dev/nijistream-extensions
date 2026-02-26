@@ -1,0 +1,30 @@
+# aniwatch-api Docker Compose for CasaOS / any Docker host
+#
+# Runs the aniwatch-api server that the HiAnime extension talks to.
+# Source: https://github.com/ghoshRitesh12/aniwatch-api
+#
+# Usage:
+#   docker compose up -d
+#
+# The API will be available at http://localhost:3000
+# Pair this with Tailscale Funnel to expose it to the internet.
+
+services:
+  aniwatch-api:
+    image: ghcr.io/ghoshritesh12/aniwatch-api:latest
+    container_name: aniwatch-api
+    restart: unless-stopped
+    ports:
+      - "3000:4000"
+    environment:
+      - PORT=4000
+      - NODE_ENV=production
+      # Optional: set allowed origins for CORS (default allows all)
+      # - ANIWATCH_API_CORS_ALLOWED_ORIGINS=*
+    # Health check: hit the home endpoint
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:4000/api/v2/hianime/home"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
