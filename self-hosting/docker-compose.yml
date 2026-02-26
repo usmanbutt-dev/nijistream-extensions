@@ -11,7 +11,7 @@
 
 services:
   aniwatch-api:
-    image: ghcr.io/ghoshritesh12/aniwatch-api:latest
+    image: ghcr.io/ghoshritesh12/aniwatch:latest
     container_name: aniwatch-api
     restart: unless-stopped
     ports:

@@ -128,7 +128,7 @@ If it consistently fails, the upstream site may have changed their encryption.
 Check https://github.com/ghoshRitesh12/aniwatch-api/issues for updates.
 
 ### Container won't start / build errors
-Use the pre-built Docker image (`ghcr.io/ghoshritesh12/aniwatch-api:latest`)
+Use the pre-built Docker image (`ghcr.io/ghoshritesh12/aniwatch:latest`)
 instead of building from source. This avoids the `pino.stdTimeFunctions`
 build error (GitHub issue #154).
 
