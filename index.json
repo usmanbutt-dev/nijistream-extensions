@@ -1,7 +1,7 @@
 {
   "name": "NijiStream Official Extensions",
   "author": "nijistream",
-  "description": "Official extension repository for NijiStream.",
+  "description": "Official extension repository for NijiStream. All extensions provide actual video streaming.",
   "extensions": [
     {
       "id": "com.nijistream.hianime",
@@ -11,47 +11,27 @@
       "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.hianime.js",
       "icon": null,
       "nsfw": false,
-      "changelog": "v1.0.0: HiAnime streaming extension via aniwatch-api. Sub/Dub with subtitles. First streaming extension!"
+      "changelog": "v1.0.0: HiAnime streaming via aniwatch-api. Sub/Dub with subtitles. Primary streaming source."
     },
     {
-      "id": "com.nijistream.gogoanime",
-      "name": "GogoAnime (MAL)",
-      "version": "2.0.0",
-      "lang": "en",
-      "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.gogoanime.js",
-      "icon": null,
-      "nsfw": false,
-      "changelog": "v2.0.0: Switched to Jikan/MAL API (api.consumet.org was shut down). Metadata browsing only — no video streaming."
-    },
-    {
-      "id": "com.nijistream.zoro",
-      "name": "AniList",
-      "version": "2.0.0",
-      "lang": "en",
-      "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.zoro.js",
-      "icon": null,
-      "nsfw": false,
-      "changelog": "v2.0.0: Rewritten to use AniList GraphQL API. High-quality covers, bilingual titles, trending/popular browse. Metadata only."
-    },
-    {
-      "id": "com.nijistream.gogoanime-direct",
-      "name": "GogoAnime (Direct)",
-      "version": "1.1.0",
-      "lang": "en",
-      "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.gogoanime-direct.js",
-      "icon": null,
-      "nsfw": false,
-      "changelog": "v1.1.0: Updated BASE_URL to gogoanime3.net (anitaku.pe is down). May be blocked by anti-bot measures."
-    },
-    {
-      "id": "com.nijistream.example",
-      "name": "Example Source (Mock)",
+      "id": "com.nijistream.animepahe",
+      "name": "AnimePahe",
       "version": "1.0.0",
       "lang": "en",
-      "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.example.js",
+      "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.animepahe.js",
       "icon": null,
       "nsfw": false,
-      "changelog": "Mock data extension for testing the extension engine."
+      "changelog": "v1.0.0: AnimePahe streaming via Consumet API. High-quality MP4 with Sub/Dub."
+    },
+    {
+      "id": "com.nijistream.animesaturn",
+      "name": "AnimeSaturn",
+      "version": "1.0.0",
+      "lang": "it",
+      "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.animesaturn.js",
+      "icon": null,
+      "nsfw": false,
+      "changelog": "v1.0.0: AnimeSaturn streaming via Consumet API. Japanese audio with Italian subtitles. HLS streams."
     }
   ]
 }

@@ -220,6 +220,9 @@ class AnimeSource {
     var responseData = data.data;
 
     // Build sources array with Referer headers from the API response.
+    // The API returns a single master M3U8 (containing multiple quality variants
+    // internally). The Dart-side player parses the M3U8 to extract individual
+    // quality options — we just pass the master URL here.
     var apiHeaders = responseData.headers || {};
     var sources = [];
     var rawSources = responseData.sources || [];
@@ -237,11 +240,13 @@ class AnimeSource {
     }
 
     // Build subtitles array.
+    // The API returns subtitle tracks under "tracks" (not "subtitles").
+    // Filter out "thumbnails" entries which are VTT sprite sheets, not subtitles.
     var subtitles = [];
-    var rawSubs = responseData.subtitles || [];
+    var rawSubs = responseData.tracks || responseData.subtitles || [];
     for (var j = 0; j < rawSubs.length; j++) {
       var sub = rawSubs[j];
-      if (sub.url) {
+      if (sub.url && sub.lang && sub.lang.toLowerCase() !== "thumbnails") {
         subtitles.push({
           url: sub.url,
           lang: sub.lang || "Unknown",
