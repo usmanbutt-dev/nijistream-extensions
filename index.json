@@ -1,37 +1,17 @@
 {
   "name": "NijiStream Official Extensions",
   "author": "nijistream",
-  "description": "Official extension repository for NijiStream. All extensions provide actual video streaming.",
+  "description": "Official extension repository for NijiStream.",
   "extensions": [
     {
       "id": "com.nijistream.hianime",
       "name": "HiAnime",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "lang": "en",
       "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.hianime.js",
       "icon": null,
       "nsfw": false,
-      "changelog": "v1.0.0: HiAnime streaming via aniwatch-api. Sub/Dub with subtitles. Primary streaming source."
-    },
-    {
-      "id": "com.nijistream.animepahe",
-      "name": "AnimePahe",
-      "version": "1.0.0",
-      "lang": "en",
-      "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.animepahe.js",
-      "icon": null,
-      "nsfw": false,
-      "changelog": "v1.0.0: AnimePahe streaming via Consumet API. High-quality MP4 with Sub/Dub."
-    },
-    {
-      "id": "com.nijistream.animesaturn",
-      "name": "AnimeSaturn",
-      "version": "1.0.0",
-      "lang": "it",
-      "url": "https://raw.githubusercontent.com/usmanbutt-dev/nijistream-extensions/master/extensions/com.nijistream.animesaturn.js",
-      "icon": null,
-      "nsfw": false,
-      "changelog": "v1.0.0: AnimeSaturn streaming via Consumet API. Japanese audio with Italian subtitles. HLS streams."
+      "changelog": "v1.0.1: Fix JSON parse errors on malformed/BOM responses; add dub fallback server when sub fails."
     }
   ]
 }

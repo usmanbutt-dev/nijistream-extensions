@@ -20,7 +20,7 @@ var API_BASE = "https://aniwatch-api-bitscape-studios-projects.vercel.app";
 const manifest = {
   id: "com.nijistream.hianime",
   name: "HiAnime",
-  version: "1.0.0",
+  version: "1.0.1",
   lang: "en",
   author: "nijistream",
   description: "Anime streaming via HiAnime (aniwatch-api). Sub/Dub with subtitles.",
@@ -30,11 +30,27 @@ const manifest = {
 
 // ── Helpers ──
 
+// Strip a UTF-8 BOM and any leading/trailing whitespace from a raw string.
+function stripBom(raw) {
+  if (!raw) return raw;
+  // UTF-8 BOM is \uFEFF; some APIs also return JSONP or HTML on error.
+  if (raw.charCodeAt(0) === 0xFEFF) {
+    raw = raw.slice(1);
+  }
+  return raw.trim();
+}
+
 // Safe JSON parse that returns null on failure.
+// Overrides the original safeParse to also strip BOM before parsing.
 function safeParse(raw) {
   try {
-    var data = JSON.parse(raw);
-    // The bridge returns {"error": "..."} on HTTP failures.
+    var cleaned = stripBom(raw);
+    // Reject obvious non-JSON responses (HTML error pages, etc.)
+    if (!cleaned || (cleaned[0] !== '{' && cleaned[0] !== '[')) {
+      log("JSON parse error: response is not JSON (starts with: " + (cleaned ? cleaned.slice(0, 40) : "empty") + ")");
+      return null;
+    }
+    var data = JSON.parse(cleaned);
     if (data && data.error) {
       log("API error: " + data.error);
       return null;
@@ -59,18 +75,15 @@ async function fetchJson(url, retries) {
       if (data && data.success !== false) {
         return data;
       }
-      lastError = "API returned unsuccessful response";
+      // safeParse returned null = JSON parse error or API error — worth retrying.
+      lastError = data ? "API returned unsuccessful response" : "JSON parse/format error";
     } catch (e) {
       lastError = String(e);
     }
 
-    // Wait before retry (500ms, 1000ms, ...)
+    // Yield between retries.
     if (attempt < maxRetries - 1) {
-      await new Promise(function(resolve) {
-        // QuickJS doesn't have setTimeout, but we can use a resolved promise
-        // to yield. The actual delay happens Dart-side between poll cycles.
-        resolve();
-      });
+      await new Promise(function(resolve) { resolve(); });
     }
   }
 
@@ -204,12 +217,21 @@ class AnimeSource {
     var data = await fetchJson(url, 3);
 
     if (!data || !data.data) {
-      // Try hd-2 as fallback server.
-      log("HiAnime: hd-1 failed, trying hd-2...");
+      // Try hd-2/sub as fallback.
+      log("HiAnime: hd-1/sub failed, trying hd-2/sub...");
       var fallbackUrl = API_BASE + "/api/v2/hianime/episode/sources"
         + "?animeEpisodeId=" + encodeURIComponent(episodeUrl)
         + "&server=hd-2&category=sub";
       data = await fetchJson(fallbackUrl, 2);
+    }
+
+    if (!data || !data.data) {
+      // Try hd-1/dub as fallback (different CDN path, sometimes succeeds when sub fails).
+      log("HiAnime: hd-2/sub failed, trying hd-1/dub...");
+      var dubUrl = API_BASE + "/api/v2/hianime/episode/sources"
+        + "?animeEpisodeId=" + encodeURIComponent(episodeUrl)
+        + "&server=hd-1&category=dub";
+      data = await fetchJson(dubUrl, 2);
     }
 
     if (!data || !data.data) {
